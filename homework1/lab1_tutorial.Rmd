@@ -84,7 +84,11 @@ I've put some data in the repository that were collected in the 18th century by 
 
 ```{r}
 # Based on where the repository is on my own computer, I enter
+<<<<<<< HEAD
 arbuthnot <- read.csv(file='/Users/nicholasnagle/Dropbox/git_root/nnagle/homework1/data/arbuthnot.csv')
+=======
+arbuthnot <- read.csv(file='/Users/nnagle/Dropbox/git_root/nnagle/homework1/data/arbuthnot.csv')
+>>>>>>> 7db84afedb9099f877f7f33f13221da1369a82b4
 ```
 You should see that the Environment window now has a data object called arbuthnot, which has 82 observations and 8 variables.  Click on "arbuthnot" in the workspace window.  You should see a new window that looks like  simplified Excel spreadsheet.  In the crazy language of R, this type of data object is called a 'data.frame.'  
 
@@ -279,7 +283,11 @@ ggplot noticed that we have two different lines and created a third aesthetic - 
 ggplot(data=arbuthnot) + 
   geom_line(aes(x=Year, y=Males, color='Male')) + 
   geom_line(aes(x=Year, y=Females, color='Females')) + 
+<<<<<<< HEAD
   ylab('Christenings') + labs(color='Sex')
+=======
+  ylab('Christenings') + labs('Sex')
+>>>>>>> 7db84afedb9099f877f7f33f13221da1369a82b4
 ```
 
 Let's make it a little more legible with thicker lines. 
