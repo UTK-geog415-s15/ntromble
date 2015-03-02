@@ -1,0 +1,46 @@
+---
+title: "Lab 3 - Homework"
+output: html_document
+---
+
+1. For the first three diagnostic plots, describe wich assumptions they help to visually evaluate.
+  The Residuals vs. Fitted plot evaluates homoskedasticity and the correlation of residuals.  If residuals are not homoskedastic, their general distance from the red line will vary across the plot.  If they are correlated, they will predictably appear below the line in spots and above it in others, exhibiting a pattern.  The Scale-Location plot does the same, but also has some ability to evaluate whether or not the residuals have a normal distribution since they are standardized.  The Normal Q-Q plot evaluates a normal distribution of residuals.  Residuals should theoretically lie on a straight line in this plot, and ones that do not wouldn't fit a normal distribution.
+  
+2. These data are time series data.  In general, data are correlated in time, and this would be a problem for simple linear regression.  Plot the regression residuals vs time, and visually assess whether there is evidence of temporal (serial) correlation.
+```{r}
+setwd("~/Desktop/Quantitative Methods in Geography/415Repository/homework3")
+library("dplyr", lib.loc="/Library/Frameworks/R.framework/Versions/3.1/Resources/library")
+library("ggplot2", lib.loc="/Library/Frameworks/R.framework/Versions/3.1/Resources/library")
+library("magrittr", lib.loc="/Library/Frameworks/R.framework/Versions/3.1/Resources/library")
+library("tidyr", lib.loc="/Library/Frameworks/R.framework/Versions/3.1/Resources/library")
+precip<-read.csv('data/precip.csv')
+rwi<-read.csv('data/rwi.csv')
+precip.df <- precip %>% gather(key=month, value=precip, -year) %>% arrange(year, month)
+precip.df <- precip.df %>% mutate(water_year = lead(year, 6))
+annual_precip <- precip.df %>% group_by(water_year)%>%summarize(precip=sum(precip))%>%filter(water_year>1895)
+rwi.precip.df <- left_join(rwi, annual_precip, by=c('year'='water_year'))
+ggplot(data=rwi.precip.df) + geom_point(aes(x=precip, y=rwi))
+model<-lm(rwi~precip,data=rwi.precip.df,na.action=na.exclude)
+plot(model)
+model2 <- lm((rwi)~(precip), data=rwi.precip.df, subset=(precip<20))
+plot(model2)
+rwi.precip.df$resid<-residuals(model)
+ggplot(data=rwi.precip.df)+geom_point(aes(x=year,y=resid))+scale_x_continuous(limits=c(1890,2010))
+```
+  There does not appear to be any serial correlation at all for this data set.
+  
+3. In the data folder is the dataset GalapagosData.txt.  The species data represents the number of species recorded from each of the Galapagos islands. A fundamental 'law' of island biogeography is that species diversity tends to follow a power law relationship with island area, i.e. $$\mbox{species} = \alpha\times{\mbox{area}^\beta}$$  
+This is not linear, but it suggests that the following regression might make sense: 
+$$\log(\mbox{species}) = a + \beta \times log(\mbox{area})$$
+$a$ is not quite $\alpha$, rather $a=\log(\alpha)$.  
+Fit this regression, and present a brief write-up that a) describes the results in words, and b) summarizes your conclusions from diagnostic model checking.
+```{r}
+islands<-read.csv('data/Galapagos.csv')
+biogeog<-lm(log(Nspecies)~log(Area),data=islands)
+plot(biogeog)
+islands2<-filter(islands,Area<2000)
+ggplot(data=islands2)+geom_point(aes(x=Area,y=Nspecies))
+ggplot(data=islands2)+geom_point(aes(x=Area,y=Nspecies))+scale_x_continuous(limits=c(0,125))
+```
+  According to these data, it seems that there is some merit to the power relationship between area and species diversity.  The estimated coefficient is 0.33 with a standard error of 0.07.  This means that with 95% confidence, the regression coefficient is between 0.19 and 0.47, a definite positive relationship.  The diagnostic models bring this somewhat into question.  While homoskedasticity seems to be reasonably met, the Q-Q plot shows residuals that tend to lie above the line for lower quantiles and below it for larger ones.  This suggests that the residuals may not follow a normal distribution and may be correlated with each other.  It appears that up to a certain point, area plays an important role in how much diversity can be supported, but once a certain size threshhold is reached other factors become more important.
+
